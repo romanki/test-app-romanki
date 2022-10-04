@@ -1,0 +1,34 @@
+version: 2.1
+
+orbs:
+  node: circleci/node@4.7
+
+jobs:
+  build:
+    machine: true
+    steps:
+      - checkout
+      - run:
+          name: Build and push Docker image to Heroku
+          command: |
+            sudo curl https://cli-assets.heroku.com/install.sh | sh
+            HEROKU_API_KEY=${HEROKU_TOKEN} heroku container:login
+            HEROKU_API_KEY=${HEROKU_TOKEN} heroku container:push -a test-app-romanki web
+  deploy-dev:
+    machine: true
+    steps:
+      - checkout
+      - run:
+          name: deplou app to heroku
+          command: |
+            sudo curl https://cli-assets.heroku.com/install.sh | sh
+            HEROKU_API_KEY=${HEROKU_TOKEN} heroku container:release -a test-app-romanki web
+
+# Orchestrate our job run sequence
+workflows:
+  build_and_deploy-dev:
+    jobs:
+      - build
+      - deploy-dev:
+          requires:
+            - build
